@@ -334,10 +334,11 @@ def main():
                         help="Max number of PRs to fetch per repo (for testing)")
     args = parser.parse_args()
 
-    result = subprocess.run(["gh", "auth", "status"], capture_output=True, text=True)
-    if result.returncode != 0:
-        print("ERROR: gh CLI is not authenticated. Run: gh auth login", file=sys.stderr)
-        sys.exit(1)
+    if not os.environ.get("GH_TOKEN") and not os.environ.get("GITHUB_TOKEN"):
+        result = subprocess.run(["gh", "auth", "status"], capture_output=True, text=True)
+        if result.returncode != 0:
+            print("ERROR: gh CLI is not authenticated. Set GH_TOKEN or run: gh auth login", file=sys.stderr)
+            sys.exit(1)
 
     db = init_db()
     total_new = 0
