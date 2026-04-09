@@ -97,6 +97,25 @@ Use `gh pr create` with:
 - Title referencing the issue
 - Body with Summary (bullet points) and Test Plan
 - Link to the issue with `Fixes #N`
+- Label `non-breaking` (required — CI will fail without a breaking-change label)
+
+```bash
+gh pr create --repo shader-slang/<project> \
+  --title "<title> (fixes #N)" \
+  --body "$(cat <<'EOF'
+## Summary
+- <bullet points>
+
+## Test Plan
+- <test details>
+
+Fixes #N
+EOF
+)" \
+  --label "non-breaking"
+```
+
+If the change IS breaking (modifies public API, changes behavior), use `--label "breaking"` instead. When unsure, ask the user before creating the PR.
 
 ### After PR Creation
 
