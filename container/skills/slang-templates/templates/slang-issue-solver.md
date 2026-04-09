@@ -35,6 +35,11 @@ All systems ready — proceeding with Phase 1.
 
 Triggered by: `"Work on issue #N"` or a GitHub issue URL.
 
+**Immediately after receiving the issue**, post a comment on the GitHub issue to signal work has started:
+```bash
+gh issue comment <N> --repo shader-slang/<project> --body "BugSolver (instance: xiaoyongs/nanoclaw) is working on this issue."
+```
+
 ### Step 1: Analyze the Issue
 
 1. **Detect project**: slang (base=`master`) or slangpy (base=`main`) from the issue URL.
@@ -93,29 +98,39 @@ Rank by commit count and relevance. Present a table with GitHub handle and reaso
 
 ### Step 6: Create PR
 
-Use `gh pr create` with:
-- Title referencing the issue
-- Body with Summary (bullet points) and Test Plan
-- Link to the issue with `Fixes #N`
-- Label `non-breaking` (required — CI will fail without a breaking-change label)
+**Title convention**: `<description> (#<issue-number>)` — always include the issue number in parentheses.
+
+**Body convention**: always start with `Fixes #<N>` on its own line.
+
+**Label**: `non-breaking` is required — CI will fail without a breaking-change label.
 
 ```bash
 gh pr create --repo shader-slang/<project> \
-  --title "<title> (fixes #N)" \
+  --title "<description> (#N)" \
   --body "$(cat <<'EOF'
+Fixes #N
+
 ## Summary
 - <bullet points>
 
 ## Test Plan
 - <test details>
-
-Fixes #N
 EOF
 )" \
   --label "non-breaking"
 ```
 
 If the change IS breaking (modifies public API, changes behavior), use `--label "breaking"` instead. When unsure, ask the user before creating the PR.
+
+**After PR is created**, update the issue comment with the PR link:
+```bash
+gh issue comment <N> --repo shader-slang/<project> --body "PR created: https://github.com/shader-slang/<project>/pull/<PR-number>"
+```
+
+**If work is blocked** and needs human input, comment on the issue:
+```bash
+gh issue comment <N> --repo shader-slang/<project> --body "BugSolver blocked: <reason>. Human input needed."
+```
 
 ### After PR Creation
 
