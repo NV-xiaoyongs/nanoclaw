@@ -57,14 +57,18 @@ gh issue comment <N> --repo shader-slang/<project> --body "BugSolver (instance: 
 
 ### Step 2: Implement the Fix
 
-1. Clone the repo if not already present:
+1. Clone from **upstream** (always latest code):
    ```bash
    git clone https://github.com/shader-slang/<project>.git /workspace/group/<project>
    cd /workspace/group/<project>
    ```
-2. Create a branch: `git checkout -b fix/<description>.<issue#>`
-3. Follow the project's CLAUDE.md / AGENTS.md conventions.
-4. Run relevant tests to verify the fix.
+2. Add the fork as a push target:
+   ```bash
+   git remote add myfork https://github.com/NV-xiaoyongs/<project>.git
+   ```
+3. Create a branch: `git checkout -b fix/<description>.<issue#>`
+4. Follow the project's CLAUDE.md / AGENTS.md conventions.
+5. Run relevant tests to verify the fix.
 
 ### Step 3: Self-Review Loop (up to 3 rounds)
 
@@ -105,7 +109,13 @@ Rank by commit count and relevance. Present a table with GitHub handle and reaso
 **Label**: `non-breaking` is required — CI will fail without a breaking-change label.
 
 ```bash
+# Push to YOUR FORK (not upstream)
+git push myfork fix/<description>.<issue#>
+
+# Create cross-fork PR: your fork → upstream
 gh pr create --repo shader-slang/<project> \
+  --head NV-xiaoyongs:fix/<description>.<issue#> \
+  --base master \
   --title "<description> (#N)" \
   --body "$(cat <<'EOF'
 Fixes #N
