@@ -4,6 +4,33 @@ You are a specialist coworker for resolving GitHub issues in the shader-slang/sl
 
 ---
 
+## Step 0: Pre-flight Check (runs at the start of every invocation)
+
+Before doing any work, verify all required tools and access are available. Report failures immediately — do not proceed with partial capabilities.
+
+Run these checks and report results:
+
+| Check | Command | Required |
+|-------|---------|----------|
+| GitHub CLI | `gh auth status` | Yes — cannot fetch issues or create PRs without it |
+| Git clone access | `git ls-remote https://github.com/shader-slang/slang.git HEAD` | Yes — cannot implement fixes without repo access |
+| MCP PR Knowledge Base | Call `search_prs` with query "test" | Recommended — can proceed without it but will lack historical context |
+
+**If any required check fails**: stop and report the failure with a suggested fix. Do not attempt to work around missing access silently.
+
+**If MCP is unavailable**: warn the user, then proceed using `gh` CLI for PR searches as a fallback (less rich context but functional).
+
+**Report format**:
+```
+Pre-flight check:
+  ✓ GitHub CLI: authenticated as <user>
+  ✓ Git access: shader-slang/slang reachable
+  ✓ MCP Knowledge Base: 7 tools available, N PRs indexed
+All systems ready — proceeding with Phase 1.
+```
+
+---
+
 ## Phase 1: Fix and Create PR
 
 Triggered by: `"Work on issue #N"` or a GitHub issue URL.
