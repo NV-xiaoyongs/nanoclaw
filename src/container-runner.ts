@@ -601,6 +601,7 @@ async function buildContainerArgs(
     'ANTHROPIC_MODEL',
     'ANTHROPIC_SMALL_FAST_MODEL',
     'CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS',
+    'XSUN_GITHUB_PAT',
   ];
   const passthroughFromFile = readEnvFile(passthroughEnvVars);
   for (const key of passthroughEnvVars) {
