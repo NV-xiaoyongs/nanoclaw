@@ -95,12 +95,24 @@ Exit when clean or after 3 rounds.
 3. Commit with descriptive message referencing the issue number.
 4. Do NOT mention Claude/AI in commit messages.
 
-### Step 5: Suggest Reviewers
+### Step 5: Find Reviewers
 
-Run `git log --format='%an' --follow -- <file>` on each changed file.
-Rank by commit count and relevance. Present a table with GitHub handle and reason.
+1. For each changed file, find frequent contributors:
+   ```bash
+   git log --format='%an' --follow -20 -- <file> | sort | uniq -c | sort -rn | head -5
+   ```
+2. Map author names to GitHub handles using MCP:
+   ```bash
+   # Query MCP for PRs touching the same files
+   # search_files "<filename>" gives PR authors with GitHub usernames
+   ```
+3. Select top 2-3 reviewers based on:
+   - Most commits to the changed files
+   - Recent activity (prefer active contributors)
+   - Avoid the PR author themselves
+4. Save the reviewer list for Step 6.
 
-### Step 6: Create PR
+### Step 6: Create PR and Assign Reviewers
 
 **Title convention**: `<description> (#<issue-number>)` — always include the issue number in parentheses.
 
@@ -132,8 +144,12 @@ EOF
 
 If the change IS breaking (modifies public API, changes behavior), use `--label "breaking"` instead. When unsure, ask the user before creating the PR.
 
-**After PR is created**, update the issue comment with the PR link:
+**After PR is created**, add reviewers and update the issue:
 ```bash
+# Add reviewers identified in Step 5
+gh pr edit <PR-number> --repo shader-slang/<project> --add-reviewer <user1>,<user2>,<user3>
+
+# Comment on the issue with PR link
 gh issue comment <N> --repo shader-slang/<project> --body "PR created: https://github.com/shader-slang/<project>/pull/<PR-number>"
 ```
 
