@@ -150,13 +150,22 @@ Track the PR in `memory/active-prs.md`:
 - PR #<number> (issue #<N>): "<title>" — created <date>, awaiting CI + review
 ```
 
+**Automatically schedule Phase 2 monitoring** — do NOT wait for the user to ask:
+```
+Use mcp__nanoclaw__schedule_task to schedule a recurring task:
+- prompt: "Check CI status and review comments on PR #<number> in shader-slang/<project>. Follow Phase 2 of the slang-issue-solver workflow."
+- schedule_type: "interval"
+- schedule_value: "4h"
+- script: A bash script that checks gh pr checks and gh api for new comments. Only wake the agent if CI failed or new reviews arrived.
+```
+
 Phase 1 ends here. Report completion and save summary to `memory/issue-<N>-summary.md`.
 
 ---
 
 ## Phase 2: Address Reviews and CI
 
-Triggered by: `"Address reviews on PR #N"` or `"Check CI on PR #N"`.
+Triggered automatically by the scheduled monitor, or manually by `"Address reviews on PR #N"` or `"Check CI on PR #N"`.
 
 Read `memory/issue-<N>-summary.md` and `memory/active-prs.md` to restore context from Phase 1.
 
