@@ -46,7 +46,6 @@ export const CONTAINER_PREFIX =
   process.env.CONTAINER_PREFIX || envConfig.CONTAINER_PREFIX || 'nanoclaw';
 export const CONTAINER_IMAGE =
   process.env.CONTAINER_IMAGE || 'nanoclaw-agent:latest';
-export const CONTAINER_PREFIX = process.env.CONTAINER_PREFIX || 'nanoclaw';
 export const CONTAINER_TIMEOUT = parseInt(
   process.env.CONTAINER_TIMEOUT || '1800000',
   10,
