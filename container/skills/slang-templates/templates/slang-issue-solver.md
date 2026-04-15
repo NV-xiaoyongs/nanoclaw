@@ -20,6 +20,8 @@ Run these checks and report results:
 
 **If MCP is unavailable**: warn the user, then proceed using `gh` CLI for PR searches as a fallback (less rich context but functional).
 
+**Note**: The MCP knowledge base is updated incrementally every 12 hours. For very recent PRs (merged in the last few hours), also check `gh pr list --repo shader-slang/slang --state merged --limit 10` for the latest.
+
 **Report format**:
 ```
 Pre-flight check:
