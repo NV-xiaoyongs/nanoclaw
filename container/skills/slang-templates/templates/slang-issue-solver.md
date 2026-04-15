@@ -197,8 +197,8 @@ Read `memory/issue-<N>-summary.md` and `memory/active-prs.md` to restore context
    | Category | How to Identify | Action |
    |----------|----------------|--------|
    | **Caused by our changes** | Failure is in a test related to changed files, or a new test we added | Fix the code, push additional commit |
-   | **Pre-existing failure** | Failure exists on the base branch too (`gh run view` on a recent master commit) | Note in PR comment: "Pre-existing failure, not related to this PR" |
-   | **Intermittent failure** | Failure is a known flaky test (check CI health dashboard or `search_prs` for "intermittent" / "flaky") | Re-run the failed job: `gh run rerun <run-id> --failed` |
+   | **Pre-existing failure** | Failure exists on the base branch too (`gh run view` on a recent master commit) | Re-run failed jobs AND note in PR comment |
+   | **Intermittent failure** | Failure is a known flaky test (check CI health dashboard or `search_prs` for "intermittent" / "flaky") | Re-run failed jobs AND note in PR comment |
 
 4. **For failures caused by our changes**:
    - Analyze the failure log: `gh run view <run-id> --log-failed`
@@ -207,16 +207,21 @@ Read `memory/issue-<N>-summary.md` and `memory/active-prs.md` to restore context
    - Commit and push (no force push)
    - Re-check CI after push
 
-5. **For pre-existing or intermittent failures**:
-   - Re-trigger failed jobs: `gh run rerun <run-id> --failed`
-   - Leave a PR comment explaining the triage
+5. **ALWAYS re-run failed CI** regardless of cause:
+   - Even if failures are pre-existing or unrelated, re-trigger them: `gh run rerun <run-id> --failed`
+   - PRs cannot be merged with red CI — all checks must be green
+   - Leave a PR comment explaining the triage (what's ours vs pre-existing vs intermittent)
 
 ### Step 8: Address Review Comments
 
-1. Fetch review comments:
+1. Fetch **ALL** review comments — both PR-level and inline:
    ```bash
+   # Inline review comments (on specific lines)
    gh api repos/shader-slang/<project>/pulls/<N>/comments
-   gh pr view <N> --repo shader-slang/<project> --comments
+   # PR-level comments (general discussion)
+   gh api repos/shader-slang/<project>/issues/<N>/comments
+   # Review summaries (approve/request changes)
+   gh api repos/shader-slang/<project>/pulls/<N>/reviews
    ```
 2. Query MCP `get_review_patterns` for the reviewer's typical feedback.
 3. **Categorize** each comment:
@@ -226,6 +231,15 @@ Read `memory/issue-<N>-summary.md` and `memory/active-prs.md` to restore context
 4. Apply fixes as additional commits (no force push after PR creation).
 5. Re-run self-review loop (Step 3) on the new changes before pushing.
 6. Update `memory/issue-<N>-summary.md` with review round results.
+
+### CLA Compliance
+
+All commits must be authored by the `slang-coworker-nanoclaw[bot]` GitHub App identity (which has CLA signed/exempt status). Do NOT author commits as "Andy (XYbot)" or any other identity — CLA checks will fail.
+
+When pushing via the Git Data API, ensure the commit author matches the bot app identity. If CLA fails on a PR:
+1. Squash to a single commit authored by the bot
+2. Force-push only if no reviews have been submitted yet
+3. If reviews exist, create a new fixup commit with the correct author
 
 ### Step 9: Update PR Tracking
 
