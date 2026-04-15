@@ -937,7 +937,7 @@ async function main(): Promise<void> {
     // Stop all running nanoclaw containers so systemd doesn't have to SIGKILL them
     try {
       const names = execSync(
-        `docker ps --filter name=nanoclaw- --format '{{.Names}}'`,
+        `docker ps --filter name=${process.env.CONTAINER_PREFIX || 'nanoclaw'}- --format '{{.Names}}'`,
         { encoding: 'utf-8', timeout: 5000 },
       ).trim();
       if (names) {
