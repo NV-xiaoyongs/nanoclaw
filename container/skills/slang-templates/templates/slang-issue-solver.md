@@ -179,34 +179,16 @@ Use mcp__nanoclaw__schedule_task to schedule a recurring task:
 
 **Monitoring Script Requirements** (to avoid silent misses):
 
-The real cause of missed comments is NOT slow polling — it is baseline state corruption. Follow these rules strictly:
-
-1. **Track processed comment IDs, NOT timestamps**
-   - Store `processedCommentIds: [id1, id2, ...]` in `memory/pr-last-check.json`
-   - IDs are stable; timestamps drift when state is updated after manual actions
-   - A new comment = any comment ID not in the set
-
-2. **Never advance baseline on manual action alone**
-   - Only mark comment IDs as "processed" AFTER the agent actually processes them
-   - Manually commenting/replying does NOT count as processing the original comment
-   - If you addressed a comment manually, still mark its ID processed by running Phase 2 once to record it
-
-3. **Never dismiss on count discrepancy — always wake the agent**
-   - If `scriptCount != manualCount`, or `newIds.length > 0` but filter shows 0, ALWAYS wake
-   - Let the agent investigate why — do not silently continue
-   - Log the discrepancy to `memory/monitoring-anomalies.md` for later review
-
-4. **Filter bot/CLA noise at the comment level, not the count level**
-   - Skip comments authored by `[bot]` users (dependabot, coderabbitai, CLA bot, etc.)
-   - Skip comments whose body is purely CLA-related ("I have read the CLA", etc.)
-   - But still record their IDs as processed so they are not re-examined
-
-5. **Check all 3 comment sources** and track IDs separately for each:
+1. **Read shared baseline** from `memory/pr-last-check.json` (not local timestamps — they drift)
+2. **Filter out bot/CLA comments** — only real reviewer comments should trigger wake-ups:
+   - Skip comments from `[bot]` users (`dependabot`, `coderabbitai`, `CLA signature`, etc.)
+   - Skip comments whose body is purely CLA-related
+3. **Never dismiss on count match alone** — if the script sees a count different from the last check, ALWAYS wake the agent to investigate, even if the count seems consistent with manual count
+4. **Update `pr-last-check.json` atomically** after wake-up decision, not before
+5. **Check all 3 comment sources**:
    - `pulls/N/comments` (inline review comments)
    - `issues/N/comments` (PR-level discussion)
    - `pulls/N/reviews` (review submissions)
-
-6. **Interval** — 1-4 hours is fine. Correctness comes from ID tracking, not polling rate.
 
 Phase 1 ends here. Report completion and save summary to `memory/issue-<N>-summary.md`.
 
