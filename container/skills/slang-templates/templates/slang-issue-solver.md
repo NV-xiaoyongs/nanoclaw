@@ -173,9 +173,40 @@ Track the PR in `memory/active-prs.md`:
 Use mcp__nanoclaw__schedule_task to schedule a recurring task:
 - prompt: "Check CI status and review comments on PR #<number> in shader-slang/<project>. Follow Phase 2 of the slang-issue-solver workflow."
 - schedule_type: "interval"
-- schedule_value: "4h"
-- script: A bash script that checks gh pr checks and gh api for new comments. Only wake the agent if CI failed or new reviews arrived.
+- schedule_value: "1h"
+- script: See "Monitoring Script Requirements" below
 ```
+
+**Monitoring Script Requirements** (to avoid silent misses):
+
+The real cause of missed comments is NOT slow polling — it is baseline state corruption. Follow these rules strictly:
+
+1. **Track processed comment IDs, NOT timestamps**
+   - Store `processedCommentIds: [id1, id2, ...]` in `memory/pr-last-check.json`
+   - IDs are stable; timestamps drift when state is updated after manual actions
+   - A new comment = any comment ID not in the set
+
+2. **Never advance baseline on manual action alone**
+   - Only mark comment IDs as "processed" AFTER the agent actually processes them
+   - Manually commenting/replying does NOT count as processing the original comment
+   - If you addressed a comment manually, still mark its ID processed by running Phase 2 once to record it
+
+3. **Never dismiss on count discrepancy — always wake the agent**
+   - If `scriptCount != manualCount`, or `newIds.length > 0` but filter shows 0, ALWAYS wake
+   - Let the agent investigate why — do not silently continue
+   - Log the discrepancy to `memory/monitoring-anomalies.md` for later review
+
+4. **Filter bot/CLA noise at the comment level, not the count level**
+   - Skip comments authored by `[bot]` users (dependabot, coderabbitai, CLA bot, etc.)
+   - Skip comments whose body is purely CLA-related ("I have read the CLA", etc.)
+   - But still record their IDs as processed so they are not re-examined
+
+5. **Check all 3 comment sources** and track IDs separately for each:
+   - `pulls/N/comments` (inline review comments)
+   - `issues/N/comments` (PR-level discussion)
+   - `pulls/N/reviews` (review submissions)
+
+6. **Interval** — 1-4 hours is fine. Correctness comes from ID tracking, not polling rate.
 
 Phase 1 ends here. Report completion and save summary to `memory/issue-<N>-summary.md`.
 
